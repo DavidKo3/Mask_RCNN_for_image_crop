@@ -60,9 +60,6 @@ def postprocess(boxes, masks):
     numClasses = masks.shape[1]
     numDetections = boxes.shape[2]
 
-    print("numClasses : ", numClasses)
-    print("numDetections :", numDetections)
-
     frameH = frame.shape[0]
     frameW = frame.shape[1]
 
@@ -116,8 +113,7 @@ for i in range(len(colorsStr)):
     color = np.array([float(rgb[0]), float(rgb[1]), float(rgb[2])])
     colors.append(color)
 
-# winName = 'Mask-RCNN Object detection and Segmentation in OpenCV'
-winName = ''
+winName = 'Mask-RCNN Object detection and Segmentation in OpenCV'
 cv.namedWindow(winName, cv.WINDOW_NORMAL)
 
 outputFile = "mask_rcnn_out_py.avi"
