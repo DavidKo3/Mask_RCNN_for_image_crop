@@ -4,7 +4,7 @@ import numpy as np
 import os.path
 import sys
 import random
-
+import time
 # Initialize the parameters
 confThreshold = 0.6  # Confidence threshold
 maskThreshold = 0.3  # Mask threshold
@@ -113,6 +113,9 @@ def drawBox_each(frame, classId, conf, left, top, right, bottom, classMask, numD
     masked_img = cv.bitwise_and(frame[top:bottom + 1, left:right + 1], frame[top:bottom + 1, left:right + 1], mask=mask)
     cv.imwrite("./detected_img/" + str(numDetections) + "_masked.jpg", masked_img)
 
+
+
+
     cv.drawContours(frame[top:bottom + 1, left:right + 1], contours, -1, color, 3, cv.LINE_8, hierarchy, 100)
     cv.imwrite("./detected_img/"+str(numDetections)+"_roi.jpg", frame[top:bottom + 1, left:right + 1])
 
@@ -166,13 +169,38 @@ def drawBox_each_file_name(frame, classId, conf, left, top, right, bottom, class
 
     # remove the contours from the image and show the resulting image
     masked_img = cv.bitwise_and(frame[top:bottom + 1, left:right + 1], frame[top:bottom + 1, left:right + 1], mask=mask)
-    cv.imwrite("./detected_img/" + file_name.split("/")[2]+"_"+str(numDetections) + "_masked.jpg", masked_img)
+
+    print("masked_img.shape: ", masked_img.shape)
+
+    # for i in range(masked_img.shape[0]):
+    #     for j in range(masked_img.shape[1]):
+    #         for c in range(3):
+    #             if masked_img[i, j, c] == 0:
+    #                 masked_img[i, j, c] = 255
+
+
+
+
+
+
+
+    frame[top:bottom + 1, left:right + 1, :] = masked_img
+
+
+    # cv.imwrite("./detected_img/" + file_name.split("/")[2] + "_" + str(numDetections) + "_frame.jpg", neg)
     print("file_name :", file_name.split("/")[-1])
 
-
+    print("frame[top:bottom + 1, left:right + 1]", frame[top:bottom + 1, left:right + 1].shape)
     # cv.drawContours(frame[top:bottom + 1, left:right + 1], contours, -1, color, 3, cv.LINE_8, hierarchy, 100)
     # cv.imwrite(file_name+"_"+str(numDetections)+"_roi.jpg", frame[top:bottom + 1, left:right + 1])
 
+
+    t, _ = net.getPerfProfile()
+    label = '%0.0f ms' % abs(
+        t * 1000.0 / cv.getTickFrequency())
+
+    cv.putText(masked_img, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+    cv.imwrite("./detected_img/" + file_name.split("/")[2] + "_" + str(numDetections) + "_masked.jpg", masked_img)
 
 
 # For each frame, extract the bounding box and mask for each detected object
@@ -277,6 +305,9 @@ with open(classesFile, 'rt') as f:
 textGraph = "./mask_rcnn_inception_v2_coco_2018_01_28/mask_rcnn_inception_v2_coco_2018_01_28.pbtxt"
 modelWeights = "./mask_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb"
 
+
+
+start_time = time.time()
 # Load the network
 net = cv.dnn.readNetFromTensorflow(modelWeights, textGraph)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
@@ -349,12 +380,17 @@ while cv.waitKey(1) < 0:
 
     # Extract the bounding box and mask for each of the detected objects
     # postprocess(boxes, masks, args.image[:-4])
+
+
     postprocess_each(boxes, masks, args.image[:-4])
+    ellapsed_time = time.time() - start_time
+    print("ellapsed_time :", ellapsed_time)
+
     # Put efficiency information.
     t, _ = net.getPerfProfile()
     label = 'Mask-RCNN on 2.8 GHz Intel Core i7 CPU, Inference time for a frame : %0.0f ms' % abs(
         t * 1000.0 / cv.getTickFrequency())
-    cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
+    # cv.putText(frame, label, (0, 15), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0))
 
     # Write the frame with the detection boxes
     if (args.image):
