@@ -373,6 +373,7 @@ for (path, dir, files) in os.walk(img_list):
                 # Extract the bounding box and mask for each of the detected objects
                 # postprocess(boxes, masks, args.image[:-4])
                 postprocess_each(boxes, masks, img_file)
+
                 # Put efficiency information.
                 # t, _ = net.getPerfProfile()
                 # label = 'Mask-RCNN on 2.8 GHz Intel Core i7 CPU, Inference time for a frame : %0.0f ms' % abs(
